@@ -122,44 +122,42 @@ end
 --#region window events
 
 function WIN:onCreate()
-  WIN.EditOutput.text = ""
-
-  WIN.ComboboxBaudrate.selected = WIN.ComboboxBaudrate.items[serialex.DEFAULTS.baudrate]
-  WIN.ComboboxBytesize.selected = WIN.ComboboxBytesize.items[serialex.DEFAULTS.bytesize]
-  WIN.ComboboxDTRMode.selected = WIN.ComboboxDTRMode.items[serialex.DEFAULTS.dtrmode]
-  WIN.ComboboxParity.selected = WIN.ComboboxParity.items[serialex.DEFAULTS.parity]
-  WIN.ComboboxRTSMode.selected = WIN.ComboboxRTSMode.items[serialex.DEFAULTS.rtsmode]
-  WIN.ComboboxStopbits.selected = WIN.ComboboxStopbits.items[serialex.DEFAULTS.stopbits]
+  self.ComboboxBaudrate.selected = self.ComboboxBaudrate.items[serialex.DEFAULTS.baudrate]
+  self.ComboboxBytesize.selected = self.ComboboxBytesize.items[serialex.DEFAULTS.bytesize]
+  self.ComboboxDTRMode.selected = self.ComboboxDTRMode.items[serialex.DEFAULTS.dtrmode]
+  self.ComboboxParity.selected = self.ComboboxParity.items[serialex.DEFAULTS.parity]
+  self.ComboboxRTSMode.selected = self.ComboboxRTSMode.items[serialex.DEFAULTS.rtsmode]
+  self.ComboboxStopbits.selected = self.ComboboxStopbits.items[serialex.DEFAULTS.stopbits]
 
   local succeeded, result = pcall(serialex.comports)
 
   if succeeded then
-    WIN.ComboboxPort.items = result
-    WIN.ComboboxPort.selected = WIN.ComboboxPort.items[1]
+    self.ComboboxPort.items = result
+    self.ComboboxPort.selected = self.ComboboxPort.items[1]
   else
     ui.error("Failed to retrieve ports.", APP.TITLE.error)
-    WIN.ComboboxPort.items = {}
-    WIN.ComboboxPort.selected = nil
+    self.ComboboxPort.items = {}
+    self.ComboboxPort.selected = nil
   end
 end
 
 function WIN:onShow()
-  WIN.GM_TOP:apply()
-  WIN.GM_LEFT:apply()
-  WIN.GM_RIGHT1:apply()
-  WIN.GM_RIGHT2:apply()
+  self.GM_TOP:apply()
+  self.GM_LEFT:apply()
+  self.GM_RIGHT1:apply()
+  self.GM_RIGHT2:apply()
 
-  WIN.WM:disable()
-  WIN.WM_STANDARD:enable()
+  self.WM:disable()
+  self.WM_STANDARD:enable()
 end
 
 function WIN:onResize()
-  WIN:checksize()
+  self:checksize()
 
-  WIN.GM_TOP:update()
-  WIN.GM_LEFT:update()
-  WIN.GM_RIGHT1:update()
-  WIN.GM_RIGHT2:update()
+  self.GM_TOP:update()
+  self.GM_LEFT:update()
+  self.GM_RIGHT1:update()
+  self.GM_RIGHT2:update()
 end
 
 function WIN:onHide()
