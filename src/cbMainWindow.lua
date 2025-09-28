@@ -5,7 +5,7 @@ local serialex = require("ecluart.serialextension")
 local sys      = require("sys")
 local ui       = require("ui")
 
---#region initalization
+--#region object initalization
 
 local APP      = require("resources.app")
 local COM      = nil
@@ -13,10 +13,42 @@ local WIN      = require("uiMainWindow")
 
 --#endregion
 
+--#region combobox events
+
+function WIN.ComboboxBaudrate:onChange()
+  self.selected = self.selected or self.items[serialex.DEFAULTS.baudrate]
+end
+
+function WIN.ComboboxBytesize:onChange()
+  self.selected = self.selected or self.items[serialex.DEFAULTS.bytesize]
+end
+
+function WIN.ComboboxDTRMode:onChange()
+  self.selected = self.selected or self.items[serialex.DEFAULTS.dtrmode]
+end
+
+function WIN.ComboboxParity:onChange()
+  self.selected = self.selected or self.items[serialex.DEFAULTS.parity]
+end
+
+function WIN.ComboboxRTSMode:onChange()
+  self.selected = self.selected or self.items[serialex.DEFAULTS.rtsmode]
+end
+
+function WIN.ComboboxStopbits:onChange()
+  self.selected = self.selected or self.items[serialex.DEFAULTS.stopbits]
+end
+
+--#endregion
+
 --#region button events
 
 function WIN.ButtonUpdate:onClick()
+  WIN.WM:disable()
+
+  WIN.ComboboxPort.items = {}
   WIN.ComboboxPort.selected = nil
+  WIN.EditOutput.text = ""
 
   local succeeded, result = pcall(serialex.comports)
 
@@ -24,13 +56,18 @@ function WIN.ButtonUpdate:onClick()
     WIN.ComboboxPort.items = result
     WIN.ComboboxPort.selected = WIN.ComboboxPort.items[1]
   else
-    ui.error("Failed to retrieve COM ports.", APP.TITLE.error)
+    ui.error("Failed to retrieve ports.", APP.TITLE.error)
   end
+
+  WIN.WM_STANDARD:enable()
 end
 
 function WIN.ButtonStart:onClick()
-  WIN.EditOutput.text = ""
+  WIN.WM_START:disable()
+  WIN.WM_STOP:enable()
+  WIN.WM_CLEAR:disable()
 
+  local port = WIN.ComboboxPort.selected.text
   local state = {
     baudrate = WIN.ComboboxBaudrate.selected.text,
     bytesize = WIN.ComboboxBytesize.selected.text,
@@ -40,9 +77,11 @@ function WIN.ButtonStart:onClick()
     stopbits = WIN.ComboboxStopbits.selected.text
   }
 
-  COM = serial.Port(WIN.ComboboxPort.selected.text)
+  COM = serial.Port(port)
 
   if COM:open(state) then
+    WIN.EditOutput.text = ""
+
     repeat
       local data = COM:readline():wait()
 
@@ -50,18 +89,28 @@ function WIN.ButtonStart:onClick()
         if data then
           WIN.EditOutput:append(tostring(data))
         else
-          ui.error("Error reading COM1 port.", APP.TITLE.error);
+          ui.error("Error reading port.", APP.TITLE.error)
+          WIN.EditOutput.text = ""
+          WIN.ComboboxPort.items = {}
+          WIN.ComboboxPort.selected = nil
         end
       end
     until not data
   end
+
+  if COM then COM:close() end
+  COM = nil
+
+  WIN.WM_START:enable()
+  WIN.WM_STOP:disable()
 end
 
 function WIN.ButtonStop:onClick()
-  if COM then
-    COM:close()
-    COM = nil
-  end
+  if COM then COM:close() end
+  COM = nil
+
+  WIN.WM_START:enable()
+  WIN.WM_STOP:disable()
 end
 
 function WIN.ButtonClear:onClick()
@@ -73,6 +122,8 @@ end
 --#region window events
 
 function WIN:onCreate()
+  WIN.EditOutput.text = ""
+
   WIN.ComboboxBaudrate.selected = WIN.ComboboxBaudrate.items[serialex.DEFAULTS.baudrate]
   WIN.ComboboxBytesize.selected = WIN.ComboboxBytesize.items[serialex.DEFAULTS.bytesize]
   WIN.ComboboxDTRMode.selected = WIN.ComboboxDTRMode.items[serialex.DEFAULTS.dtrmode]
@@ -82,9 +133,13 @@ function WIN:onCreate()
 
   local succeeded, result = pcall(serialex.comports)
 
-  if succeeded and result then
+  if succeeded then
     WIN.ComboboxPort.items = result
     WIN.ComboboxPort.selected = WIN.ComboboxPort.items[1]
+  else
+    ui.error("Failed to retrieve ports.", APP.TITLE.error)
+    WIN.ComboboxPort.items = {}
+    WIN.ComboboxPort.selected = nil
   end
 end
 
@@ -93,10 +148,14 @@ function WIN:onShow()
   WIN.GM_LEFT:apply()
   WIN.GM_RIGHT1:apply()
   WIN.GM_RIGHT2:apply()
+
+  WIN.WM:disable()
+  WIN.WM_STANDARD:enable()
 end
 
 function WIN:onResize()
   WIN:checksize()
+
   WIN.GM_TOP:update()
   WIN.GM_LEFT:update()
   WIN.GM_RIGHT1:update()
@@ -104,10 +163,7 @@ function WIN:onResize()
 end
 
 function WIN:onHide()
-  if COM then
-    COM:close()
-  end
-
+  if COM then COM:close() end
   sys.exit()
 end
 
@@ -117,31 +173,26 @@ WIN:show()
 
 async(function()
   while WIN.visible do
---    sleep()
+    sleep()
 
-    WIN.VM_PORT:apply()
-    if not WIN.VM_PORT.isvalid then
-      WIN.WM_PORT:disable()
-      goto update
+    if not COM then
+      WIN.VM_PORT:apply()
+      if WIN.VM_PORT.isvalid then
+        WIN.WM_STANDARD:enable()
+      else
+        WIN.WM_PORT:disable()
+      end
+
+      WIN.VM_OUTPUT:apply()
+      if WIN.VM_OUTPUT.isvalid then
+        WIN.WM_CLEAR:enable()
+      else
+        WIN.WM_CLEAR:disable()
+      end
     end
 
-    WIN.WM:enable()
-
-    if COM and COM.isopen then
-      WIN.WM_START:disable()
-      goto update
-    else
-      WIN.WM_STOP:disable()
-    end
-
-    WIN.VM_OUTPUT:apply()
-    if not WIN.VM_OUTPUT.isvalid then
-      WIN.WM_CLEAR:disable()
-    end
-
-    ::update::
     ui.update()
   end
 end)
 
-waitall()
+ui.task:wait()

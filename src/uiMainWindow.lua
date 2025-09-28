@@ -31,6 +31,24 @@ Window:center()
 
 --#endregion
 
+--#region Methodes
+
+function Window:checksize()
+  if self.height == 0 or self.width == 0 then
+    return
+  end
+
+  if self.height < self.minheight then
+    self.height = self.minheight
+  end
+
+  if self.width < self.minwidth then
+    self.width = self.minwidth
+  end
+end
+
+--#endregion
+
 --#region Widgets TOP
 
 local PortLabel = ui.Label(Window, "Port:")
@@ -127,19 +145,19 @@ Window.WM:add(UpdateButton, "UpdateButton")
 
 --#endregion
 
---#region WidgetManager PORT
+--#region WidgetManager STANDARD
 
-Window.WM_PORT = wm.WidgetManager()
-Window.WM_PORT:add(BaudrateCombobox, "BaudrateCombobox")
-Window.WM_PORT:add(BytesizeCombobox, "BytesizeCombobox")
-Window.WM_PORT:add(ClearButton, "ClearButton")
-Window.WM_PORT:add(DTRModeCombobox, "DTRModeCombobox")
-Window.WM_PORT:add(ParityCombobox, "ParityCombobox")
-Window.WM_PORT:add(RTSModeCombobox, "RTSModeCombobox")
-Window.WM_PORT:add(StartButton, "StartButton")
-Window.WM_PORT:add(StopbitsCombobox, "StopbitsCombobox")
-Window.WM_PORT:add(StopButton, "StopButton")
-Window.WM_PORT:add(OutputEdit, "OutputEdit")
+Window.WM_STANDARD = wm.WidgetManager()
+Window.WM_STANDARD:add(BaudrateCombobox, "BaudrateCombobox")
+Window.WM_STANDARD:add(BytesizeCombobox, "BytesizeCombobox")
+Window.WM_STANDARD:add(DTRModeCombobox, "DTRModeCombobox")
+Window.WM_STANDARD:add(OutputEdit, "OutputEdit")
+Window.WM_STANDARD:add(ParityCombobox, "ParityCombobox")
+Window.WM_STANDARD:add(PortCombobox, "PortCombobox")
+Window.WM_STANDARD:add(RTSModeCombobox, "RTSModeCombobox")
+Window.WM_STANDARD:add(StartButton, "StartButton")
+Window.WM_STANDARD:add(StopbitsCombobox, "StopbitsCombobox")
+Window.WM_STANDARD:add(UpdateButton, "UpdateButton")
 
 --#endregion
 
@@ -148,7 +166,6 @@ Window.WM_PORT:add(OutputEdit, "OutputEdit")
 Window.WM_START = wm.WidgetManager()
 Window.WM_START:add(BaudrateCombobox, "BaudrateCombobox")
 Window.WM_START:add(BytesizeCombobox, "BytesizeCombobox")
-Window.WM_START:add(ClearButton, "ClearButton")
 Window.WM_START:add(DTRModeCombobox, "DTRModeCombobox")
 Window.WM_START:add(ParityCombobox, "ParityCombobox")
 Window.WM_START:add(PortCombobox, "PortCombobox")
@@ -159,18 +176,31 @@ Window.WM_START:add(UpdateButton, "UpdateButton")
 
 --#endregion
 
---#region WidgetManager CLEAR
-
-Window.WM_CLEAR = wm.WidgetManager()
-Window.WM_CLEAR:add(ClearButton, "ClearButton")
-Window.WM_CLEAR:add(OutputEdit, "OutputEdit")
-
---#endregion
-
 --#region WidgetManager STOP
 
 Window.WM_STOP = wm.WidgetManager()
 Window.WM_STOP:add(StopButton, "StopButton")
+
+--#endregion
+
+--#region WidgetManager PORT
+
+Window.WM_PORT = wm.WidgetManager()
+Window.WM_PORT:add(BaudrateCombobox, "BaudrateCombobox")
+Window.WM_PORT:add(BytesizeCombobox, "BytesizeCombobox")
+Window.WM_PORT:add(DTRModeCombobox, "DTRModeCombobox")
+Window.WM_PORT:add(ParityCombobox, "ParityCombobox")
+Window.WM_PORT:add(RTSModeCombobox, "RTSModeCombobox")
+Window.WM_PORT:add(StartButton, "StartButton")
+Window.WM_PORT:add(StopbitsCombobox, "StopbitsCombobox")
+Window.WM_PORT:add(OutputEdit, "OutputEdit")
+
+--#endregion
+
+--#region WidgetManager CLEAR
+
+Window.WM_CLEAR = wm.WidgetManager()
+Window.WM_CLEAR:add(ClearButton, "ClearButton")
 
 --#endregion
 
@@ -185,24 +215,6 @@ Window.VM_OUTPUT:add(OutputEdit, "text", isNotEmpty, "is empty")
 
 Window.VM_PORT = vm.ValidationManager()
 Window.VM_PORT:add(PortCombobox, "selected", isNotNil, "is nil")
-
---#endregion
-
---#region Methodes
-
-function Window:checksize()
-    if self.height == 0 or self.width == 0 then
-    return
-  end
-
-  if self.height < self.minheight then
-    self.height = self.minheight
-  end
-
-  if self.width < self.minwidth then
-    self.width = self.minwidth
-  end
-end
 
 --#endregion
 
