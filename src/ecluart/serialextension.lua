@@ -3,7 +3,7 @@ local serialextension     = {}
 
 -- Default values for serial communication settings.
 serialextension.DEFAULTS  = {
-  baudrate = 6,
+  baudrate = 1,
   bytesize = 4,
   parity = "none",
   stopbits = "one",
